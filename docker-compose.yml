@@ -1,0 +1,94 @@
+# Tarea 8 · Creacion de funciones · IoT Analytics Dashboard (NexoDev Solutions)
+name: iot-funciones
+
+services:
+  # ================= BASE DE DATOS (tablas + funciones) =================
+  datos:
+    image: postgres:16
+    container_name: funciones-datos
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-admin123}
+      POSTGRES_DB: iotanalytics
+    command: >
+      -c ssl=on -c ssl_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+      -c ssl_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+    volumes:
+      - ./datos/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks: [red-datos]          # sin puerto expuesto a la PC
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d iotanalytics"]
+      interval: 3s
+      retries: 30
+
+  # ================= MENSAJERIA EN TIEMPO REAL =================
+  mensajes:
+    image: rabbitmq:3.13-management
+    container_name: funciones-rabbitmq
+    hostname: funciones-rabbitmq      # nombre fijo del nodo
+    environment:
+      RABBITMQ_DEFAULT_USER: iot
+      RABBITMQ_DEFAULT_PASS: iot123
+      # La cookie de Erlang va como argumento: RabbitMQ ya no lee
+      # /var/lib/rabbitmq/.erlang.cookie, que falla con "eacces" en Docker Desktop
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-setcookie iotfuncionescookie"
+    tmpfs:
+      - /var/lib/rabbitmq:mode=1777
+    ports:
+      - "15678:15672"              # consola de RabbitMQ: http://localhost:15678
+    networks: [red-mensajes]
+    healthcheck:
+      # Prueba que el puerto AMQP acepte conexiones (no usa la cookie)
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/5672'"]
+      interval: 5s
+      retries: 30
+
+  # ========= CONSUMIDOR: RabbitMQ -> fn_registrar_lectura() =========
+  consumidor:
+    build: ./servicios
+    image: iot-funciones-servicios:1.0
+    container_name: funciones-consumidor
+    command: python -u consumidor.py
+    environment:
+      DB_HOST: datos
+      DB_USER: consumidor_iot        # solo puede ejecutar fn_registrar_lectura
+      DB_PASSWORD: consumidor123
+      RABBIT_URL: amqp://iot:iot123@mensajes:5672/
+    networks: [red-datos, red-mensajes]
+    depends_on:
+      datos: { condition: service_healthy }
+      mensajes: { condition: service_healthy }
+
+  # ================= SIMULADOR DE SENSORES =================
+  simulador:
+    build: ./servicios
+    image: iot-funciones-servicios:1.0
+    container_name: funciones-simulador
+    command: python -u simulador.py
+    environment:
+      RABBIT_URL: amqp://iot:iot123@mensajes:5672/
+      INTERVALO: "1"
+    networks: [red-mensajes]       # no tiene acceso a la base de datos
+    depends_on:
+      consumidor: { condition: service_started }
+
+  # ================= VISUALIZACION =================
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: funciones-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/iot-funciones.json
+    ports:
+      - "3008:3000"                # http://localhost:3008
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks: [red-datos]
+    depends_on:
+      datos: { condition: service_healthy }
+
+networks:
+  red-datos:
+  red-mensajes:

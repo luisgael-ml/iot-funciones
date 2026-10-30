@@ -1,0 +1,504 @@
+{
+  "uid": "iot-funciones",
+  "title": "IoT Analytics Dashboard · Funciones",
+  "tags": [
+    "nexodev",
+    "tarea8"
+  ],
+  "timezone": "browser",
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "version": 1,
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Promedio 10 min · PRE03-TEMP (fn_promedio_sensor)",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "iot-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "iot-pg"
+          },
+          "rawQuery": true,
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT fn_promedio_sensor('PRE03-TEMP') AS promedio"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "decimals": 2,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Promedio 10 min · TOR01-TEMP (fn_promedio_sensor)",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "iot-pg"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "iot-pg"
+          },
+          "rawQuery": true,
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT fn_promedio_sensor('TOR01-TEMP') AS promedio"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "decimals": 2,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Promedio 10 min · EMB02-TEMP (fn_promedio_sensor)",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "iot-pg"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "iot-pg"
+          },
+          "rawQuery": true,
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT fn_promedio_sensor('EMB02-TEMP') AS promedio"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "decimals": 2,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Sensores con riesgo de pico (fn_prediccion)",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "iot-pg"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "iot-pg"
+          },
+          "rawQuery": true,
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT COUNT(*) AS sensores FROM fn_prediccion() WHERE riesgo = 'riesgo de pico'"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Temperatura por minuto (fn_serie_promedios)",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "iot-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 8,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "iot-pg"
+          },
+          "rawQuery": true,
+          "editorMode": "code",
+          "format": "time_series",
+          "rawSql": "SELECT tiempo AS time, sensor AS metric, promedio AS value\nFROM fn_serie_promedios('temperatura', $__timeFrom()::timestamptz, $__timeTo()::timestamptz, '1 minute')"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Vibracion por minuto (fn_serie_promedios)",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "iot-pg"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 4,
+        "w": 8,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "iot-pg"
+          },
+          "rawQuery": true,
+          "editorMode": "code",
+          "format": "time_series",
+          "rawSql": "SELECT tiempo AS time, sensor AS metric, promedio AS value\nFROM fn_serie_promedios('vibracion', $__timeFrom()::timestamptz, $__timeTo()::timestamptz, '1 minute')"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "mm/s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Energia por minuto (fn_serie_promedios)",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "iot-pg"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 4,
+        "w": 8,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "iot-pg"
+          },
+          "rawQuery": true,
+          "editorMode": "code",
+          "format": "time_series",
+          "rawSql": "SELECT tiempo AS time, sensor AS metric, promedio AS value\nFROM fn_serie_promedios('energia', $__timeFrom()::timestamptz, $__timeTo()::timestamptz, '1 minute')"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "Prediccion a 30 minutos por regresion lineal (fn_prediccion)",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "iot-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 24,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "iot-pg"
+          },
+          "rawQuery": true,
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT sensor, actual, proyectado, umbral, pendiente_hora AS \"pendiente/h\", confianza AS \"confianza (R²)\",\n       minutos_al_umbral AS \"min al umbral\", riesgo\nFROM fn_prediccion(3, 30)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "riesgo"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "normal": {
+                        "color": "green",
+                        "index": 0
+                      },
+                      "estable": {
+                        "color": "green",
+                        "index": 1
+                      },
+                      "advertencia": {
+                        "color": "orange",
+                        "index": 2
+                      },
+                      "subiendo": {
+                        "color": "orange",
+                        "index": 3
+                      },
+                      "critica": {
+                        "color": "red",
+                        "index": 4
+                      },
+                      "riesgo de pico": {
+                        "color": "red",
+                        "index": 5
+                      },
+                      "sin tendencia": {
+                        "color": "gray",
+                        "index": 6
+                      },
+                      "sin datos": {
+                        "color": "gray",
+                        "index": 7
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Estadisticas de la ultima hora por sensor (fn_estadisticas_sensor)",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "iot-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 22,
+        "w": 24,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "iot-pg"
+          },
+          "rawQuery": true,
+          "editorMode": "code",
+          "format": "table",
+          "rawSql": "SELECT x.sensor, e.lecturas, e.promedio, e.minimo, e.maximo, e.desviacion, e.sobre_umbral AS \"sobre umbral\", e.situacion\nFROM unnest(ARRAY['PRE03-TEMP','PRE03-VIB','PRE03-ENE','TOR01-TEMP','TOR01-VIB','TOR01-ENE','EMB02-TEMP','EMB02-VIB','EMB02-ENE']) AS x(sensor)\nCROSS JOIN LATERAL fn_estadisticas_sensor(x.sensor, NOW() - INTERVAL '1 hour') AS e"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "situacion"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "normal": {
+                        "color": "green",
+                        "index": 0
+                      },
+                      "estable": {
+                        "color": "green",
+                        "index": 1
+                      },
+                      "advertencia": {
+                        "color": "orange",
+                        "index": 2
+                      },
+                      "subiendo": {
+                        "color": "orange",
+                        "index": 3
+                      },
+                      "critica": {
+                        "color": "red",
+                        "index": 4
+                      },
+                      "riesgo de pico": {
+                        "color": "red",
+                        "index": 5
+                      },
+                      "sin tendencia": {
+                        "color": "gray",
+                        "index": 6
+                      },
+                      "sin datos": {
+                        "color": "gray",
+                        "index": 7
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
